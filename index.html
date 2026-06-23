@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+  <title>TalkieTech · Education Chatbot</title>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(145deg, #f0f4ff 0%, #e8edfa 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* Chat Container – Full Screen */
+    .chat-card {
+      width: 100vw;
+      height: 100vh;
+      max-width: 100%;
+      background: #ffffff;
+      border-radius: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header – larger padding */
+    .chat-header {
+      background: linear-gradient(135deg, #4a3f8a, #6c5fc7);
+      padding: 24px 28px 20px 28px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    /* Bigger avatar */
+    .avatar {
+      width: 52px;
+      height: 52px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;   /* was 22px */
+      font-weight: 700;
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Bigger title */
+    .header-title h3 {
+      font-size: 26px;    /* was 20px */
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    /* Bigger status */
+    .header-title p {
+      font-size: 17px;    /* was 13px */
+      opacity: 0.9;
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    /* Bigger language toggle */
+    .lang-toggle {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: white;
+      padding: 8px 20px;
+      border-radius: 40px;
+      font-size: 17px;    /* was 14px */
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      backdrop-filter: blur(4px);
+    }
+
+    .lang-toggle:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Messages Area */
+    .chat-messages {
+      flex: 1;
+      padding: 24px 22px 12px 22px;
+      overflow-y: auto;
+      background: #fafbff;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;         /* more spacing between messages */
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 5px;
+    }
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: #c8cee0;
+      border-radius: 20px;
+    }
+
+    /* Message Bubbles – bigger text */
+    .message {
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      max-width: 90%;
+      animation: fadeUp 0.3s ease;
+    }
+
+    .message.bot {
+      align-self: flex-start;
+    }
+
+    .message.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .bubble {
+      padding: 16px 22px;   /* was 12px 16px */
+      border-radius: 22px;
+      font-size: 19px;      /* was 15px */
+      line-height: 1.6;
+      word-break: break-word;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .message.bot .bubble {
+      background: #ffffff;
+      border: 1px solid #e9edf5;
+      border-bottom-left-radius: 6px;
+      color: #1e1e2a;
+    }
+
+    .message.user .bubble {
+      background: #4a3f8a;
+      color: white;
+      border-bottom-right-radius: 6px;
+    }
+
+    /* Bigger message icons (robot / user) */
+    .message .icon {
+      width: 40px;          /* was 32px */
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;      /* was 15px */
+      flex-shrink: 0;
+    }
+
+    .message.bot .icon {
+      background: #eef2ff;
+      color: #4a3f8a;
+    }
+
+    .message.user .icon {
+      background: #d9d3f5;
+      color: #2d2366;
+    }
+
+    /* Quick Action Buttons – bigger text & padding */
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 22px 12px 22px;
+      background: #fafbff;
+      border-top: 1px solid #f0f2f8;
+      flex-shrink: 0;
+    }
+
+    .chip {
+      background: white;
+      border: 1px solid #e2e7f2;
+      border-radius: 40px;
+      padding: 14px 24px;    /* was 10px 18px */
+      font-size: 17px;       /* was 13px */
+      font-weight: 600;
+      color: #2d2b4a;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+      flex: 1 0 auto;
+      justify-content: center;
+    }
+
+    .chip i {
+      font-size: 18px;       /* was 14px */
+      color: #6c5fc7;
+    }
+
+    .chip:hover {
+      background: #f0f2ff;
+      border-color: #b8aee0;
+      transform: translateY(-2px);
+    }
+
+    .chip:active {
+      transform: scale(0.96);
+    }
+
+    /* Input Area – bigger text & padding */
+    .chat-input {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 22px 22px 22px;
+      background: #ffffff;
+      border-top: 1px solid #edf0f7;
+      flex-shrink: 0;
+    }
+
+    .chat-input input {
+      flex: 1;
+      border: 1px solid #e2e7f2;
+      border-radius: 40px;
+      padding: 18px 22px;     /* was 14px 18px */
+      font-size: 18px;        /* was 15px */
+      outline: none;
+      transition: 0.2s;
+      background: #f8faff;
+    }
+
+    .chat-input input:focus {
+      border-color: #6c5fc7;
+      background: white;
+      box-shadow: 0 0 0 5px rgba(74, 63, 138, 0.1);
+    }
+
+    /* Bigger send button */
+    .chat-input button {
+      background: #4a3f8a;
+      border: none;
+      color: white;
+      width: 60px;           /* was 52px */
+      height: 60px;
+      border-radius: 50%;
+      font-size: 28px;       /* was 20px */
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .chat-input button:hover {
+      background: #3b3175;
+      transform: scale(1.03);
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Typing indicator – bigger dots */
+    .typing .bubble {
+      background: #eef2ff !important;
+      color: #4a3f8a;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 18px 26px;
+    }
+
+    .typing .dot {
+      width: 10px;           /* was 8px */
+      height: 10px;
+      background: #6c5fc7;
+      border-radius: 50%;
+      display: inline-block;
+      animation: pulse 1.4s infinite both;
+    }
+
+    .typing .dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes pulse {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Utility */
+    .hidden { display: none !important; }
+
+    /* Responsive – keep sizes comfortable on small screens */
+    @media (max-width: 480px) {
+      .chat-header { padding: 18px 18px 14px 18px; }
+      .header-title h3 { font-size: 22px; }
+      .header-title p { font-size: 15px; }
+      .avatar { width: 44px; height: 44px; font-size: 28px; }
+      .lang-toggle { font-size: 15px; padding: 6px 14px; }
+      .bubble { font-size: 17px; padding: 14px 18px; }
+      .chip { font-size: 15px; padding: 12px 16px; }
+      .chip i { font-size: 16px; }
+      .chat-input input { font-size: 16px; padding: 14px 16px; }
+      .chat-input button { width: 54px; height: 54px; font-size: 24px; }
+      .message .icon { width: 36px; height: 36px; font-size: 17px; }
+      .quick-actions { padding: 10px 16px 8px 16px; gap: 8px; }
+      .chat-input { padding: 10px 16px 16px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="chat-card" id="app">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="header-left">
+      <div class="avatar">💬</div>
+      <div class="header-title">
+        <h3>TalkieTech</h3>
+        <p id="statusText">🤝 Always here to help</p>
+      </div>
+    </div>
+    <button class="lang-toggle" id="langBtn" onclick="toggleLanguage()">
+      <i class="fas fa-language"></i> <span id="langLabel">EN</span>
+    </button>
+  </div>
+
+  <!-- Messages -->
+  <div class="chat-messages" id="messageContainer">
+    <!-- Bot welcome -->
+    <div class="message bot">
+      <div class="icon"><i class="fas fa-robot"></i></div>
+      <div class="bubble" id="welcomeMsg">
+        Hi! I'm TalkieTech 🌟<br />
+        I support first‑gen learners, bridge learning gaps, and help you build skills. How can I assist you today?
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Action Chips -->
+  <div class="quick-actions" id="chipContainer">
+    <button class="chip" data-action="firstgen"><i class="fas fa-user-graduate"></i> <span>First‑Gen Support</span></button>
+    <button class="chip" data-action="mothertongue"><i class="fas fa-comment-dots"></i> <span>Mother Tongue</span></button>
+    <button class="chip" data-action="dropout"><i class="fas fa-exclamation-triangle"></i> <span>Dropout Prevention</span></button>
+    <button class="chip" data-action="vocational"><i class="fas fa-tools"></i> <span>Skill Documentation</span></button>
+    <button class="chip" data-action="bridge"><i class="fas fa-undo-alt"></i> <span>Bridge Learning</span></button>
+  </div>
+
+  <!-- Input -->
+  <div class="chat-input">
+    <input type="text" id="userInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter') sendMessage()" />
+    <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<script>
+  // ========================
+  // Language Configuration
+  // ========================
+  const LANG = {
+    en: {
+      welcome: `Hi! I'm TalkieTech 🌟<br />I support first‑gen learners, bridge learning gaps, and help you build skills. How can I assist you today?`,
+      status: '🤝 Always here to help',
+      placeholder: 'Type a message...',
+      responses: {
+        firstgen: "🎓 You're a first-generation learner — that's brave! I can help you with: <br/>• College & career guidance <br/>• Scholarship info <br/>• Study tips & mentorship <br/>Ask me anything!",
+        mothertongue: "📚 Learning in your mother tongue makes concepts stick! I can explain topics in Hindi, Tamil, Telugu, and more. Which subject can I help you with?",
+        dropout: "💪 It's okay to feel stuck. Let's talk about what's going on — I can connect you with counselors, share flexible learning paths, and help you find your way back to education.",
+        vocational: "🛠️ Got skills? Let's document them! I can help you: <br/>• Build a digital portfolio <br/>• List your vocational training <br/>• Match with jobs & apprenticeships",
+        bridge: "🔁 Returning to studies? I've got your back! I'll help you catch up with: <br/>• Foundation courses <br/>• Previous year materials <br/>• Personalized learning plans",
+        default: "That's a great question! I'm still learning, but I'll do my best to help. Could you tell me more about what you need?",
+        fallback: "I'm here to listen. Would you like to know more about first-gen support, learning in your mother tongue, or skill documentation?"
+      }
+    },
+    hi: {
+      welcome: `नमस्ते! मैं TalkieTech हूँ 🌟<br />मैं पहली पीढ़ी के learners, शिक्षा में अंतर को पाटने, और कौशल निर्माण में आपकी मदद करने के लिए यहाँ हूँ। आज मैं आपकी कैसे सहायता कर सकता हूँ?`,
+      status: '🤝 हमेशा मदद के लिए तैयार',
+      placeholder: 'संदेश लिखें...',
+      responses: {
+        firstgen: "🎓 आप पहली पीढ़ी के learner हैं — यह साहसिक कदम है! मैं आपकी मदद कर सकता हूँ: <br/>• कॉलेज और करियर मार्गदर्शन <br/>• छात्रवृत्ति जानकारी <br/>• अध्ययन टिप्स और मेंटरशिप <br/>मुझसे कुछ भी पूछें!",
+        mothertongue: "📚 मातृभाषा में सीखना अवधारणाओं को आसान बनाता है! मैं हिंदी, तमिल, तेलुगु आदि में विषय समझा सकता हूँ। किस विषय में मदद चाहिए?",
+        dropout: "💪 रुकना ठीक है। चलिए बात करते हैं — मैं आपको काउंसलर से जोड़ सकता हूँ, लचीले शिक्षण विकल्प दिखा सकता हूँ, और वापस पढ़ाई की ओर ला सकता हूँ।",
+        vocational: "🛠️ क्या आपके पास कौशल हैं? चलिए उन्हें दस्तावेज़ करते हैं! मैं मदद कर सकता हूँ: <br/>• डिजिटल पोर्टफोलियो बनाना <br/>• व्यावसायिक प्रशिक्षण सूची <br/>• नौकरियों और apprenticeship से मिलान",
+        bridge: "🔁 पढ़ाई पर वापस आ रहे हैं? मैं आपका साथ दूंगा! मदद करूंगा: <br/>• फाउंडेशन कोर्स <br/>• पिछले साल की सामग्री <br/>• व्यक्तिगत शिक्षण योजना",
+        default: "यह बहुत अच्छा सवाल है! मैं अभी भी सीख रहा हूँ, लेकिन पूरी कोशिश करूंगा। क्या आप और बता सकते हैं?",
+        fallback: "मैं सुनने के लिए यहाँ हूँ। क्या आप पहली पीढ़ी सहायता, मातृभाषा में सीखना, या कौशल दस्तावेज़ीकरण के बारे में जानना चाहेंगे?"
+      }
+    }
+  };
+
+  // ========================
+  // State
+  // ========================
+  let currentLang = 'en';
+  const messagesContainer = document.getElementById('messageContainer');
+  const userInput = document.getElementById('userInput');
+  const statusText = document.getElementById('statusText');
+  const langLabel = document.getElementById('langLabel');
+
+  // ========================
+  // Core Functions
+  // ========================
+
+  function getLang() {
+    return LANG[currentLang];
+  }
+
+  function addMessage(text, sender = 'bot') {
+    const wrapper = document.createElement('div');
+    wrapper.className = `message ${sender}`;
+
+    const icon = document.createElement('div');
+    icon.className = 'icon';
+    icon.innerHTML = sender === 'bot' ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = text;
+
+    wrapper.appendChild(icon);
+    wrapper.appendChild(bubble);
+    messagesContainer.appendChild(wrapper);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+
+  function showTyping() {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'message bot typing';
+    wrapper.id = 'typingIndicator';
+    const icon = document.createElement('div');
+    icon.className = 'icon';
+    icon.innerHTML = '<i class="fas fa-robot"></i>';
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = `<span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
+    wrapper.appendChild(icon);
+    wrapper.appendChild(bubble);
+    messagesContainer.appendChild(wrapper);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+
+  function removeTyping() {
+    const typing = document.getElementById('typingIndicator');
+    if (typing) typing.remove();
+  }
+
+  function getResponse(action) {
+    const langData = getLang();
+    const responses = langData.responses;
+    switch(action) {
+      case 'firstgen': return responses.firstgen;
+      case 'mothertongue': return responses.mothertongue;
+      case 'dropout': return responses.dropout;
+      case 'vocational': return responses.vocational;
+      case 'bridge': return responses.bridge;
+      default: return responses.default;
+    }
+  }
+
+  function handleUserMessage(text) {
+    const langData = getLang();
+    const lower = text.toLowerCase();
+    if (lower.includes('first') || lower.includes('gen') || lower.includes('पहली') || lower.includes('पीढ़ी')) {
+      return getResponse('firstgen');
+    } else if (lower.includes('mother') || lower.includes('tongue') || lower.includes('मातृ') || lower.includes('भाषा')) {
+      return getResponse('mothertongue');
+    } else if (lower.includes('drop') || lower.includes('leave') || lower.includes('छोड़') || lower.includes('dropout')) {
+      return getResponse('dropout');
+    } else if (lower.includes('skill') || lower.includes('vocat') || lower.includes('कौशल') || lower.includes('प्रशिक्षण')) {
+      return getResponse('vocational');
+    } else if (lower.includes('bridge') || lower.includes('return') || lower.includes('वापस') || lower.includes('पुल')) {
+      return getResponse('bridge');
+    } else {
+      return langData.responses.fallback;
+    }
+  }
+
+  function sendMessage() {
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    addMessage(text, 'user');
+    userInput.value = '';
+    userInput.focus();
+
+    showTyping();
+    setTimeout(() => {
+      removeTyping();
+      const reply = handleUserMessage(text);
+      addMessage(reply, 'bot');
+    }, 600 + Math.random() * 400);
+  }
+
+  function handleChipAction(action) {
+    const reply = getResponse(action);
+    addMessage(reply, 'bot');
+  }
+
+  // ========================
+  // Language Toggle
+  // ========================
+  function toggleLanguage() {
+    currentLang = (currentLang === 'en') ? 'hi' : 'en';
+    const langData = getLang();
+
+    statusText.textContent = langData.status;
+    langLabel.textContent = currentLang.toUpperCase();
+    userInput.placeholder = langData.placeholder;
+
+    const firstBot = messagesContainer.querySelector('.message.bot .bubble');
+    if (firstBot) {
+      firstBot.innerHTML = langData.welcome;
+    }
+
+    const chips = document.querySelectorAll('.chip');
+    const chipMap = {
+      firstgen: currentLang === 'en' ? 'First‑Gen Support' : 'पहली पीढ़ी सहायता',
+      mothertongue: currentLang === 'en' ? 'Mother Tongue' : 'मातृभाषा',
+      dropout: currentLang === 'en' ? 'Dropout Prevention' : 'ड्रॉपआउट रोकथाम',
+      vocational: currentLang === 'en' ? 'Skill Documentation' : 'कौशल दस्तावेज़ीकरण',
+      bridge: currentLang === 'en' ? 'Bridge Learning' : 'ब्रिज लर्निंग'
+    };
+    chips.forEach((chip) => {
+      const action = chip.dataset.action;
+      if (action && chipMap[action]) {
+        const span = chip.querySelector('span');
+        if (span) span.textContent = chipMap[action];
+      }
+    });
+  }
+
+  // ========================
+  // Event Listeners
+  // ========================
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', function(e) {
+      const action = this.dataset.action;
+      if (action) {
+        const langData = getLang();
+        const actionLabels = {
+          firstgen: currentLang === 'en' ? 'First‑Gen Support' : 'पहली पीढ़ी सहायता',
+          mothertongue: currentLang === 'en' ? 'Mother Tongue' : 'मातृभाषा',
+          dropout: currentLang === 'en' ? 'Dropout Prevention' : 'ड्रॉपआउट रोकथाम',
+          vocational: currentLang === 'en' ? 'Skill Documentation' : 'कौशल दस्तावेज़ीकरण',
+          bridge: currentLang === 'en' ? 'Bridge Learning' : 'ब्रिज लर्निंग'
+        };
+        addMessage(actionLabels[action] || action, 'user');
+
+        showTyping();
+        setTimeout(() => {
+          removeTyping();
+          handleChipAction(action);
+        }, 500);
+      }
+    });
+  });
+
+  userInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') sendMessage();
+  });
+
+  // ========================
+  // Init
+  // ========================
+  document.addEventListener('DOMContentLoaded', function() {
+    const langData = getLang();
+    const firstBot = messagesContainer.querySelector('.message.bot .bubble');
+    if (firstBot) firstBot.innerHTML = langData.welcome;
+    statusText.textContent = langData.status;
+    userInput.placeholder = langData.placeholder;
+  });
+</script>
+
+</body>
+</html>
